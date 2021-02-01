@@ -93,7 +93,7 @@
 (def class-priorities
   {
    :barbarian [:strength :constitution :dexterity]
-   :bard [:charisma :dexterity :constituion]
+   :bard [:charisma :dexterity :constitution]
    :cleric [:wisdom :strength :constitution]
    })
 
@@ -109,7 +109,7 @@
    })
 
 (defn model-character
-  [dice-roll model-class]
+  [dice-roll model-race model-class]
   (
    let [
         priorities (model-class class-priorities)
@@ -122,19 +122,36 @@
        (let [n (first p)
              r (first roll)
              ]
-         (recur (next p) (next roll) (assoc-in result [n] r)))
+         (recur (next p)
+                (next roll)
+                (assoc-in result [n] (update-ability-tuple r (get-in race-bonuses [model-race n] 0)))))
        result
        )
      )
    )
   )
 
+(defn update-ability-tuple
+  [current-tuple adjustment]
+  (
+   let
+   [
+    score (first current-tuple)
+    bonus (second current-tuple)
+    new-score (+ adjustment score)
+    ]
+   into [new-score (ability-score new-score)]))
+   
+
 (def my-roll (sort (comp - compare) (character-roll)))
 
 (prn my-roll)
 
-(model-character my-roll :barbarian)
+(model-character my-roll :mountain-dwarf :barbarian)
 
-(model-character my-roll :bard)
+(model-character my-roll :mountain-dwarf :bard)
 
-(model-character my-roll :cleric)
+(model-character my-roll :mountain-dwarf :cleric)
+
+
+(get-in race-bonuses [:mountain-dwarf :strengh] 0)
